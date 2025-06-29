@@ -14,6 +14,23 @@ import 'react-toastify/dist/ReactToastify.css';
 import { CsvItem, OptimizationResult, OptimizationSummary, OrderInfo } from './types/types';
 import { optimizeUpsWithPlates, checkBackendHealth } from './utils/optimization';
 
+const rotatingMessages = [
+  "📦 Optimizing layout... balancing space & efficiency.",
+  "🔍 Looking for the best plate configuration...",
+  "🧠 AI is solving your layout like a puzzle piece.",
+  "📊 Larger datasets need a bit more thinking time...",
+  "📈 Building optimization model with constraints...",
+  "🤖 This might take a moment — good things take time.",
+];
+
+const stages = [
+  "🔍 Reading data...",
+  "📐 Mapping units...",
+  "🧮 Constructing model...",
+  "🧠 Solving...",
+  "📊 Finalizing results..."
+];
+
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [csvData, setCsvData] = useState<CsvItem[]>([]);
@@ -98,6 +115,33 @@ function App() {
     }
   };
 
+  function RotatingMessage() {
+    const [index, setIndex] = useState(0);
+    useEffect(() => {
+      const interval = setInterval(() => setIndex((i) => (i + 1) % rotatingMessages.length), 4000);
+      return () => clearInterval(interval);
+    }, []);
+    return (
+      <div className="text-lg font-medium text-indigo-700 dark:text-indigo-300 transition-all duration-500 px-4">
+        {rotatingMessages[index]}
+      </div>
+    );
+  }
+
+  function StageProgress() {
+    const [stage, setStage] = useState(0);
+    useEffect(() => {
+      const interval = setInterval(() => setStage((s) => (s + 1) % stages.length), 6000);
+      return () => clearInterval(interval);
+    }, []);
+    return (
+      <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        {stages[stage]}
+      </div>
+    );
+  }
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 transition-all duration-500">
       <ToastContainer 
@@ -176,10 +220,10 @@ function App() {
               </>
             )}
             
-            {!summary && (
-              <div className="bg-gradient-to-br from-white/90 via-blue-50/50 to-indigo-50/30 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-700/50 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/50 min-h-[400px] flex flex-col items-center justify-center text-center relative overflow-hidden">
+            {/* {!summary && (
+              <div className="bg-gradient-to-br from-white/90 via-blue-50/50 to-indigo-50/30 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-700/50 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/50 min-h-[400px] flex flex-col items-center justify-center text-center relative overflow-hidden"> */}
                 {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-5">
+                {/* <div className="absolute inset-0 opacity-5">
                   <div className="absolute top-10 left-10 w-20 h-20 bg-blue-500 rounded-full blur-xl"></div>
                   <div className="absolute bottom-10 right-10 w-32 h-32 bg-indigo-500 rounded-full blur-xl"></div>
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-purple-500 rounded-full blur-2xl"></div>
@@ -244,6 +288,50 @@ function App() {
                     <p>🎯 Optimize layouts with advanced algorithms</p>
                     <p>📋 Export professional reports</p>
                   </div>
+                </div>
+              </div>
+            )} */}
+            {!summary && (
+              <div className="bg-gradient-to-br from-white/90 via-blue-50/50 to-indigo-50/30 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-700/50 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/50 min-h-[400px] flex flex-col items-center justify-center text-center relative overflow-hidden">
+                
+                <div className="absolute inset-0 opacity-5">
+                  <div className="absolute top-10 left-10 w-20 h-20 bg-blue-500 rounded-full blur-xl"></div>
+                  <div className="absolute bottom-10 right-10 w-32 h-32 bg-indigo-500 rounded-full blur-xl"></div>
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-purple-500 rounded-full blur-2xl"></div>
+                </div>
+
+                <div className="relative z-10 flex flex-col items-center space-y-6 w-full max-w-xl">
+
+                  {isCalculating ? (
+                    <>
+                      <div className="animate-spin-slow w-16 h-16 rounded-full border-4 border-indigo-400 border-t-transparent shadow-xl"></div>
+
+                      <RotatingMessage />
+                      <StageProgress />
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+
+                      <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 via-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-white dark:via-blue-400 dark:to-indigo-400 mb-3">
+                        🏭 UPS Optimizer Pro
+                      </h2>
+
+                      <p className="text-gray-600 dark:text-gray-300 max-w-md mb-4 text-lg leading-relaxed">
+                        Professional printing layout optimization with advanced constraint programming and AI enhancement.
+                      </p>
+
+                      <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1 mt-4">
+                        <li>✨ Upload your CSV data to get started</li>
+                        <li>🎯 Optimize layouts with advanced algorithms</li>
+                        <li>📋 Export professional reports</li>
+                      </ul>
+                    </>
+                  )}
                 </div>
               </div>
             )}
