@@ -268,7 +268,7 @@
 
 // export default CsvUpload;
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Upload, FileText, Check, AlertTriangle, Info, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import Papa from 'papaparse';
 import { CsvItem } from '../types/types';
@@ -286,6 +286,17 @@ const CsvUpload: React.FC<CsvUploadProps> = ({ onUpload, uploadedCount }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadVisible, setUploadVisible] = useState(false);
 
+  useEffect(() => {
+    if (uploadedCount === 0) {
+      setUploadVisible(false);
+      setFileName(null);
+      setError(null);
+      if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    }
+  }, [uploadedCount]);
+
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -295,13 +306,6 @@ const CsvUpload: React.FC<CsvUploadProps> = ({ onUpload, uploadedCount }) => {
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-  };
-
-  const handleClearUpload = () => {
-    setFileName(null);
-    setError(null);
-    setUploadVisible(false);  // Hide the count
-    onUpload([]); // Clear uploaded data
   };
 
   const processFile = (file: File) => {
@@ -513,15 +517,6 @@ const CsvUpload: React.FC<CsvUploadProps> = ({ onUpload, uploadedCount }) => {
           >
             Select CSV File
           </button>
-          {fileName && (
-          <button
-            type="button"
-            onClick={handleClearUpload}
-            className="mt-2 px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-red-500 to-pink-500 rounded-lg hover:from-red-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500 transition-all duration-300 transform hover:scale-105 shadow-lg"
-          >
-            Delete Upload
-          </button>
-        )}
           
         </div>
       </div>

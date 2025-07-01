@@ -40,6 +40,8 @@ function App() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [activeTab, setActiveTab] = useState<'results' | 'visualization'>('results');
   const [backendConnected, setBackendConnected] = useState(false);
+  const [csvUploadKey, setCsvUploadKey] = useState(0);
+
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -67,6 +69,7 @@ function App() {
     setOrderInfo({});
     setResults([]);
     setSummary(null);
+    setCsvUploadKey(prev => prev + 1); // 🔄 Force re-render
     toast.info('Data cleared successfully');
   };
 
@@ -160,7 +163,7 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
           {/* Left Sidebar - Ultra Compact */}
           <div className="lg:col-span-1 space-y-3">
-            <CsvUpload onUpload={handleCsvUpload} uploadedCount={csvData.length} />
+            <CsvUpload key={csvUploadKey} onUpload={handleCsvUpload} uploadedCount={csvData.length} />
             <OrderInfoForm orderInfo={orderInfo} onOrderInfoChange={setOrderInfo} />
             <OptimizationForm 
               onOptimize={handleOptimize} 
