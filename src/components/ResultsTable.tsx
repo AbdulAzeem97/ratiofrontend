@@ -83,15 +83,23 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
     { key: 'ITEM_DESCRIPTION', label: 'Description', required: false },
     { key: 'ITEM_CODE', label: 'Item Code', required: false },
     { key: 'PRICE', label: 'Price', required: false },
-    { key: 'RATIO', label: 'Ratio', required: false },
+    { key: 'EP_NO', label: 'EP_NO', required: false },
     { key: 'RUN', label: 'Run', required: false },
     { key: 'SHEET', label: 'Sheet', required: false },
   ];
 
   // Filter columns that exist in the data
-  const availableColumns = allColumns.filter(col => 
-    col.required || results.some(result => result[col.key as keyof OptimizationResult])
-  );
+  // const availableColumns = allColumns.filter(col => 
+  //   col.required || results.some(result => result[col.key as keyof OptimizationResult])
+  // );
+  // Filter and reorder: optional first, required after
+const optionalCols = allColumns.filter(col => 
+  !col.required && results.some(result => result[col.key as keyof OptimizationResult])
+);
+const requiredCols = allColumns.filter(col => col.required);
+
+// Combine: Optional first, then required
+const availableColumns = [...optionalCols, ...requiredCols];
 
   const visibleColumns = availableColumns.filter(col => !hiddenColumns.has(col.key));
 

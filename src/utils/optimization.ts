@@ -361,7 +361,7 @@ function initialBalancedPartition<T extends { QTY: number }>(items: T[], plateCo
   return plates;
 }
 
-const BACKEND_URL = 'http://192.168.183.53:5200';
+const BACKEND_URL = 'http://192.168.2.57:5200';
 
 export const optimizeUpsWithPlates = async (
   items: CsvItem[],
@@ -439,7 +439,7 @@ export const optimizeUpsWithPlates = async (
       if (item.ITEM_DESCRIPTION) result.ITEM_DESCRIPTION = item.ITEM_DESCRIPTION;
       if (item.ITEM_CODE) result.ITEM_CODE = item.ITEM_CODE;
       if (item.PRICE) result.PRICE = item.PRICE;
-      if (item.RATIO) result.RATIO = item.RATIO;
+      if (item.EP_NO) result.EP_NO = item.EP_NO;
       if (item.RUN) result.RUN = item.RUN;
       if (item.SHEET) result.SHEET = item.SHEET;
 
@@ -497,7 +497,7 @@ export const optimizeUpsWithPlates = async (
       if (item.ITEM_DESCRIPTION) result.ITEM_DESCRIPTION = item.ITEM_DESCRIPTION;
       if (item.ITEM_CODE) result.ITEM_CODE = item.ITEM_CODE;
       if (item.PRICE) result.PRICE = item.PRICE;
-      if (item.RATIO) result.RATIO = item.RATIO;
+      if (item.EP_NO) result.EP_NO = item.EP_NO;
       if (item.RUN) result.RUN = item.RUN;
       if (item.SHEET) result.SHEET = item.SHEET;
 
@@ -555,7 +555,7 @@ export const optimizeUpsWithPlates = async (
         if (item.ITEM_DESCRIPTION) result.ITEM_DESCRIPTION = item.ITEM_DESCRIPTION;
         if (item.ITEM_CODE) result.ITEM_CODE = item.ITEM_CODE;
         if (item.PRICE) result.PRICE = item.PRICE;
-        if (item.RATIO) result.RATIO = item.RATIO;
+        if (item.EP_NO) result.EP_NO = item.EP_NO;
         if (item.RUN) result.RUN = item.RUN;
         if (item.SHEET) result.SHEET = item.SHEET;
 

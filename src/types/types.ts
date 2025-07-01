@@ -5,7 +5,7 @@ export interface CsvItem {
   ITEM_DESCRIPTION?: string;
   ITEM_CODE?: string;
   PRICE?: number;
-  RATIO?: string;
+  EP_NO?: string;
   RUN?: string;
   SHEET?: string;
 }
@@ -22,7 +22,7 @@ export interface OptimizationResult {
   ITEM_DESCRIPTION?: string;
   ITEM_CODE?: string;
   PRICE?: number;
-  RATIO?: string;
+  EP_NO?: string;
   RUN?: string;
   SHEET?: string;
 }
@@ -48,4 +48,8 @@ export interface OrderInfo {
   job?: string;
   brand?: string;
   item?: string;
+}
+
+export interface EfficiencyValue {
+  efficiency: number;
 }

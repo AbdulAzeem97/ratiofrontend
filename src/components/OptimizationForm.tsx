@@ -15,8 +15,8 @@ const OptimizationForm: React.FC<OptimizationFormProps> = ({
   isDisabled,
   backendConnected,
 }) => {
-  const [upsPerPlate, setUpsPerPlate] = useState<number>(20);
-  const [plateCount, setPlateCount] = useState<number>(3);
+  const [upsPerPlate, setUpsPerPlate] = useState<number>(1);
+  const [plateCount, setPlateCount] = useState<number>(1);
 
   const handleOptimize = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +25,7 @@ const OptimizationForm: React.FC<OptimizationFormProps> = ({
     if (upsPerPlate <= 0) return toast.error('Units per sheet must be greater than 0');
     if (plateCount <= 0) return toast.error('Plate count must be greater than 0');
     if (upsPerPlate > 50) return toast.error('UPS cannot exceed 50');
-    if (plateCount > 25) return toast.error('Plate count cannot exceed 25');
+    if (plateCount > 52) return toast.error('Plate count cannot exceed 52');
 
     onOptimize(upsPerPlate, plateCount);
   };
@@ -51,8 +51,8 @@ const OptimizationForm: React.FC<OptimizationFormProps> = ({
   };
 
   const handleReset = () => {
-    setUpsPerPlate(20);
-    setPlateCount(3);
+    setUpsPerPlate(1);
+    setPlateCount(1);
   };
 
   return (
@@ -120,7 +120,7 @@ const OptimizationForm: React.FC<OptimizationFormProps> = ({
               Number of Plates
             </label>
             <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-              A-{String.fromCharCode(64 + plateCount)} (1-25)
+              A-{String.fromCharCode(64 + plateCount)} (1-52)
             </span>
           </div>
           <div className="flex items-center space-x-2">
@@ -135,16 +135,16 @@ const OptimizationForm: React.FC<OptimizationFormProps> = ({
             <input
               type="number"
               value={plateCount}
-              onChange={(e) => handleNumberChange(e, setPlateCount, 1, 25)}
+              onChange={(e) => handleNumberChange(e, setPlateCount, 1, 52)}
               className="flex-1 text-center text-sm font-bold rounded-lg border-2 dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 py-2 min-w-0 transition-all duration-200"
               min="1"
-              max="25"
+              max="52"
               disabled={isDisabled || isCalculating}
             />
             <button
               type="button"
-              onClick={() => increment(setPlateCount, 25)}
-              disabled={isDisabled || isCalculating || plateCount >= 25}
+              onClick={() => increment(setPlateCount, 52)}
+              disabled={isDisabled || isCalculating || plateCount >= 52}
               className="p-2 border-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 border-gray-300 dark:border-gray-600 transition-all duration-200 hover:border-blue-400 dark:hover:border-blue-500"
             >
               <Plus size={12} />
