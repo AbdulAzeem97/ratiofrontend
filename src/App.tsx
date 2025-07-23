@@ -13,6 +13,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { CsvItem, OptimizationResult, OptimizationSummary, OrderInfo } from './types/types';
 import { optimizeUpsWithPlates, checkBackendHealth } from './utils/optimization';
+import {motion} from 'framer-motion';
 
 const rotatingMessages = [
   "📦 Optimizing layout... balancing space & efficiency.",
@@ -41,6 +42,46 @@ function App() {
   const [activeTab, setActiveTab] = useState<'results' | 'visualization'>('results');
   const [backendConnected, setBackendConnected] = useState(false);
   const [csvUploadKey, setCsvUploadKey] = useState(0);
+  const [taskStatus, setTaskStatus] = useState<string | null>(null);
+  const [estimatedTime, setEstimatedTime] = useState<number | null>(null); // in seconds
+  const [remainingTime, setRemainingTime] = useState<number | null>(null);
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [stageIndex, setStageIndex] = useState(0);
+
+
+  useEffect(() => {
+    if (!estimatedTime || taskStatus !== 'processing') return;
+
+    const interval = setInterval(() => {
+      setRemainingTime(prev => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    setRemainingTime(estimatedTime);
+    return () => clearInterval(interval);
+  }, [estimatedTime, taskStatus]);
+
+  useEffect(() => {
+    if (!isCalculating) return;
+
+    const msgInterval = setInterval(() => {
+      setMessageIndex(i => (i + 1) % rotatingMessages.length);
+    }, 4000);
+
+    const stageInterval = setInterval(() => {
+      setStageIndex(i => (i + 1) % stages.length);
+    }, 6000);
+
+    return () => {
+      clearInterval(msgInterval);
+      clearInterval(stageInterval);
+    };
+  }, [isCalculating]);
 
 
   useEffect(() => {
@@ -90,13 +131,17 @@ function App() {
       toast.error('Please upload CSV data first');
       return;
     }
-
+    setMessageIndex(0);
+    setStageIndex(0);
     setIsCalculating(true);
+    setSummary(null);
+
+
     
     try {
       const startTime = Date.now();
       const { results: optimizationResults, summary: optimizationSummary } = 
-        await optimizeUpsWithPlates(csvData, upsPerPlate, plateCount);
+        await optimizeUpsWithPlates(csvData, upsPerPlate, plateCount, (status) => setTaskStatus(status), (seconds) => setEstimatedTime(seconds));
       
       const executionTime = Date.now() - startTime;
       
@@ -115,34 +160,23 @@ function App() {
       toast.error(`Optimization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsCalculating(false);
+      setTaskStatus(null);
     }
   };
 
-  function RotatingMessage() {
-    const [index, setIndex] = useState(0);
-    useEffect(() => {
-      const interval = setInterval(() => setIndex((i) => (i + 1) % rotatingMessages.length), 4000);
-      return () => clearInterval(interval);
-    }, []);
+  function ProgressBar({ estimatedTime, remainingTime }: { estimatedTime: number, remainingTime: number }) {
+    const progress = Math.max(0, Math.min(100, ((estimatedTime - remainingTime) / estimatedTime) * 100));
+
     return (
-      <div className="text-lg font-medium text-indigo-700 dark:text-indigo-300 transition-all duration-500 px-4">
-        {rotatingMessages[index]}
+      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden mt-3 shadow-inner">
+        <div
+          className="h-full bg-green-500 transition-all duration-100 ease-linear"
+          style={{ width: `${progress}%` }}
+        />
       </div>
     );
   }
 
-  function StageProgress() {
-    const [stage, setStage] = useState(0);
-    useEffect(() => {
-      const interval = setInterval(() => setStage((s) => (s + 1) % stages.length), 6000);
-      return () => clearInterval(interval);
-    }, []);
-    return (
-      <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-        {stages[stage]}
-      </div>
-    );
-  }
 
 
   return (
@@ -223,77 +257,6 @@ function App() {
               </>
             )}
             
-            {/* {!summary && (
-              <div className="bg-gradient-to-br from-white/90 via-blue-50/50 to-indigo-50/30 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-700/50 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/50 min-h-[400px] flex flex-col items-center justify-center text-center relative overflow-hidden"> */}
-                {/* Background Pattern */}
-                {/* <div className="absolute inset-0 opacity-5">
-                  <div className="absolute top-10 left-10 w-20 h-20 bg-blue-500 rounded-full blur-xl"></div>
-                  <div className="absolute bottom-10 right-10 w-32 h-32 bg-indigo-500 rounded-full blur-xl"></div>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-purple-500 rounded-full blur-2xl"></div>
-                </div>
-                
-                <div className="relative z-10">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 via-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-white dark:via-blue-400 dark:to-indigo-400 mb-3">
-                    🏭 UPS Optimizer Pro
-                  </h2>
-                  
-                  <p className="text-gray-600 dark:text-gray-300 max-w-md mb-8 text-lg leading-relaxed">
-                    Professional printing layout optimization with advanced constraint programming and AI enhancement.
-                  </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl mb-8">
-                    <div className="bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-4 rounded-xl border border-white/30 dark:border-gray-600/30 hover:transform hover:scale-105 transition-all duration-300">
-                      <div className="text-2xl mb-2">📊</div>
-                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Smart Data Input</h3>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        Advanced CSV processing with validation and optional field support.
-                      </p>
-                    </div>
-                    
-                    <div className="bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-4 rounded-xl border border-white/30 dark:border-gray-600/30 hover:transform hover:scale-105 transition-all duration-300">
-                      <div className="text-2xl mb-2">🤖</div>
-                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">AI Optimization</h3>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        Constraint programming with OR-Tools for maximum efficiency.
-                      </p>
-                    </div>
-                    
-                    <div className="bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-4 rounded-xl border border-white/30 dark:border-gray-600/30 hover:transform hover:scale-105 transition-all duration-300">
-                      <div className="text-2xl mb-2">📈</div>
-                      <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Professional Reports</h3>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        Detailed PDF/Excel exports with order information integration.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className={`inline-flex items-center space-x-3 px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
-                    backendConnected 
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' 
-                      : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg'
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full ${
-                      backendConnected ? 'bg-white animate-pulse' : 'bg-white animate-pulse'
-                    }`}></div>
-                    <span>
-                      {backendConnected ? '🚀 AI Backend Connected' : '💻 Local Mode Active'}
-                    </span>
-                  </div>
-                  
-                  <div className="mt-6 text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                    <p>✨ Upload your CSV data to get started</p>
-                    <p>🎯 Optimize layouts with advanced algorithms</p>
-                    <p>📋 Export professional reports</p>
-                  </div>
-                </div>
-              </div>
-            )} */}
             {!summary && (
               <div className="bg-gradient-to-br from-white/90 via-blue-50/50 to-indigo-50/30 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-700/50 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/50 min-h-[400px] flex flex-col items-center justify-center text-center relative overflow-hidden">
                 
@@ -309,8 +272,41 @@ function App() {
                     <>
                       <div className="animate-spin-slow w-16 h-16 rounded-full border-4 border-indigo-400 border-t-transparent shadow-xl"></div>
 
-                      <RotatingMessage />
-                      <StageProgress />
+                      <div className="text-lg font-medium text-indigo-700 dark:text-indigo-300 transition-all duration-500 px-4">
+                        {rotatingMessages[messageIndex]}
+                      </div>
+
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                        {stages[stageIndex]}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        {taskStatus !== 'processing' && (
+                          <p>Your request is in a queue... waiting to be picked.</p>
+                        )}
+
+                        {taskStatus === 'processing' && estimatedTime && remainingTime !== null && (
+                        <>
+                          <p>
+                            Your request is now being calculated. Estimated time: {Math.ceil(estimatedTime / 60)} minute(s).
+                            <motion.div
+                            key={remainingTime}
+                            initial={{ scale: 0.9, rotate: 0 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 300 }}
+                            className="inline-block ml-1 font-semibold text-indigo-600 dark:text-indigo-300"
+                          >
+                            {remainingTime}s left
+                          </motion.div>
+                          </p>
+                          <ProgressBar estimatedTime={estimatedTime} remainingTime={remainingTime} />
+                        </>
+                        )}
+
+                        {!taskStatus && (
+                          <p>Sending request to backend...</p>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <>
